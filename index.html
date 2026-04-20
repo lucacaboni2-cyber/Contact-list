@@ -310,25 +310,29 @@
       msg.className = 'message';
       msg.textContent = 'Saving…';
 
-      const { data: { user } } = await getSupabase().auth.getUser();
+      try {
+        const sb = getSupabase();
+        const { data: sessionData } = await sb.auth.getSession();
+        const userId = sessionData?.session?.user?.id ?? null;
 
-      const { error } = await getSupabase().from('contacts').insert({
-        user_id: user?.id ?? null,
-        name,
-        surname,
-        email: email || null,
-        description: description || null,
-      });
+        const { error } = await sb.from('contacts').insert({
+          user_id: userId,
+          name,
+          surname,
+          email: email || null,
+          description: description || null,
+        });
 
-      btn.disabled = false;
+        if (error) throw error;
 
-      if (error) {
-        msg.className = 'message error';
-        msg.textContent = error.message;
-      } else {
         msg.className = 'message success';
         msg.textContent = 'Contact saved!';
         setTimeout(closeModal, 1200);
+      } catch (err) {
+        msg.className = 'message error';
+        msg.textContent = err.message || 'Something went wrong.';
+      } finally {
+        btn.disabled = false;
       }
     }
   </script>
