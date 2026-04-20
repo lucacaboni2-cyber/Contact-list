@@ -157,7 +157,10 @@
   const SUPABASE_URL = 'https://nklekakddfviwjhuqggi.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbGVrYWtkZGZ2aXdqaHVxZ2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDU3OTEsImV4cCI6MjA5MjI4MTc5MX0.nbokOmpsGP2j9O5-7wI7lNRbtHqxB9Xmnis_e3nllIY';
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let supabase;
+  window.addEventListener('DOMContentLoaded', () => {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  });
 
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach((t, i) => {
