@@ -157,10 +157,17 @@
   const SUPABASE_URL = 'https://nklekakddfviwjhuqggi.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbGVrYWtkZGZ2aXdqaHVxZ2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDU3OTEsImV4cCI6MjA5MjI4MTc5MX0.nbokOmpsGP2j9O5-7wI7lNRbtHqxB9Xmnis_e3nllIY';
 
-  let supabase;
-  window.addEventListener('DOMContentLoaded', () => {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  });
+  let _sb = null;
+  function getClient() {
+    if (!_sb) _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return _sb;
+  }
+
+  function setMsg(id, type, text) {
+    const el = document.getElementById(id);
+    el.className = 'message' + (type ? ' ' + type : '');
+    el.textContent = text;
+  }
 
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach((t, i) => {
@@ -171,37 +178,36 @@
   }
 
   async function handleLogin() {
-    const email = document.getElementById('login-email').value;
+    const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
-    const msg = document.getElementById('login-msg');
-    msg.className = 'message';
-    msg.textContent = 'Signing in…';
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      msg.className = 'message error';
-      msg.textContent = error.message;
-    } else {
-      msg.className = 'message success';
-      msg.textContent = 'Logged in! Redirecting…';
-      setTimeout(() => window.location.href = 'index.html', 1000);
+    const btn = document.querySelector('#form-login .btn');
+    setMsg('login-msg', '', 'Signing in…');
+    btn.disabled = true;
+    try {
+      const { error } = await getClient().auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      setMsg('login-msg', 'success', 'Logged in! Redirecting…');
+      setTimeout(() => window.location.href = 'index.html', 800);
+    } catch (err) {
+      setMsg('login-msg', 'error', err.message || 'Login failed.');
+      btn.disabled = false;
     }
   }
 
   async function handleSignup() {
-    const email = document.getElementById('signup-email').value;
+    const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
-    const msg = document.getElementById('signup-msg');
-    msg.className = 'message';
-    msg.textContent = 'Creating account…';
-
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      msg.className = 'message error';
-      msg.textContent = error.message;
-    } else {
-      msg.className = 'message success';
-      msg.textContent = 'Check your email to confirm your account!';
+    const btn = document.querySelector('#form-signup .btn');
+    setMsg('signup-msg', '', 'Creating account…');
+    btn.disabled = true;
+    try {
+      const { error } = await getClient().auth.signUp({ email, password });
+      if (error) throw error;
+      setMsg('signup-msg', 'success', 'Check your email to confirm your account!');
+    } catch (err) {
+      setMsg('signup-msg', 'error', err.message || 'Sign up failed.');
+    } finally {
+      btn.disabled = false;
     }
   }
 </script>
