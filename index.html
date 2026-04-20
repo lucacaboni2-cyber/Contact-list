@@ -195,9 +195,43 @@
 
     .message.error { color: #f87171; }
     .message.success { color: #4ade80; }
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #222;
+      background: #000;
+      z-index: 50;
+    }
+
+    .nav-brand { font-weight: 800; font-size: 1rem; letter-spacing: -0.02em; }
+
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+
+    .nav-user { font-size: 0.85rem; color: #666; }
+
+    .btn-sm {
+      padding: 0.45rem 1.1rem;
+      font-size: 0.875rem;
+      border-radius: 0.45rem;
+    }
   </style>
 </head>
 <body>
+
+  <nav>
+    <div class="nav-brand">Contact List</div>
+    <div class="nav-right">
+      <span class="nav-user" id="nav-user"></span>
+      <a href="login.html" class="btn btn-outline btn-sm" id="nav-login-btn">Login</a>
+      <button class="btn btn-primary btn-sm" id="nav-logout-btn" style="display:none" onclick="handleLogout()">Logout</button>
+    </div>
+  </nav>
 
   <div class="hero">
     <div class="badge">Contact List App</div>
@@ -276,6 +310,25 @@
       }
       return _supabase;
     }
+
+    async function initNav() {
+      const { data: { session } } = await getSupabase().auth.getSession();
+      const loginBtn = document.getElementById('nav-login-btn');
+      const logoutBtn = document.getElementById('nav-logout-btn');
+      const navUser = document.getElementById('nav-user');
+      if (session?.user) {
+        navUser.textContent = session.user.email;
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-flex';
+      }
+    }
+
+    async function handleLogout() {
+      await getSupabase().auth.signOut();
+      window.location.reload();
+    }
+
+    window.addEventListener('DOMContentLoaded', initNav);
 
     function openModal() {
       document.getElementById('modal-overlay').classList.add('open');
