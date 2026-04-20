@@ -266,10 +266,16 @@
   </div>
 
   <script>
-    const supabase = window.supabase.createClient(
-      'https://nklekakddfviwjhuqggi.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbGVrYWtkZGZ2aXdqaHVxZ2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDU3OTEsImV4cCI6MjA5MjI4MTc5MX0.nbokOmpsGP2j9O5-7wI7lNRbtHqxB9Xmnis_e3nllIY'
-    );
+    let _supabase = null;
+    function getSupabase() {
+      if (!_supabase) {
+        _supabase = window.supabase.createClient(
+          'https://nklekakddfviwjhuqggi.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbGVrYWtkZGZ2aXdqaHVxZ2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDU3OTEsImV4cCI6MjA5MjI4MTc5MX0.nbokOmpsGP2j9O5-7wI7lNRbtHqxB9Xmnis_e3nllIY'
+        );
+      }
+      return _supabase;
+    }
 
     function openModal() {
       document.getElementById('modal-overlay').classList.add('open');
@@ -304,9 +310,9 @@
       msg.className = 'message';
       msg.textContent = 'Saving…';
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await getSupabase().auth.getUser();
 
-      const { error } = await supabase.from('contacts').insert({
+      const { error } = await getSupabase().from('contacts').insert({
         user_id: user?.id ?? null,
         name,
         surname,
