@@ -9,8 +9,8 @@
 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f0f1a;
-      color: #e2e8f0;
+      background: #000;
+      color: #fff;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -26,9 +26,9 @@
 
     .badge {
       display: inline-block;
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      color: #818cf8;
+      background: transparent;
+      border: 1px solid #fff;
+      color: #fff;
       font-size: 0.75rem;
       font-weight: 600;
       letter-spacing: 0.1em;
@@ -42,16 +42,13 @@
       font-size: clamp(2.5rem, 6vw, 4rem);
       font-weight: 800;
       line-height: 1.1;
-      background: linear-gradient(135deg, #818cf8, #38bdf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #fff;
       margin-bottom: 1.25rem;
     }
 
     p {
       font-size: 1.125rem;
-      color: #94a3b8;
+      color: #999;
       line-height: 1.7;
       margin-bottom: 2.5rem;
     }
@@ -77,17 +74,17 @@
       border: none;
     }
 
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,0.15); }
 
     .btn-primary {
-      background: linear-gradient(135deg, #6366f1, #38bdf8);
-      color: #fff;
+      background: #fff;
+      color: #000;
     }
 
     .btn-outline {
       background: transparent;
-      border: 1px solid #334155;
-      color: #cbd5e1;
+      border: 1px solid #fff;
+      color: #fff;
     }
 
     .cards {
@@ -100,16 +97,16 @@
     }
 
     .card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: #111;
+      border: 1px solid #333;
       border-radius: 1rem;
       padding: 1.5rem;
       text-align: center;
     }
 
     .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
-    .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
-    .card p { font-size: 0.875rem; color: #64748b; margin: 0; }
+    .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; color: #fff; }
+    .card p { font-size: 0.875rem; color: #666; margin: 0; }
   </style>
 </head>
 <body>
