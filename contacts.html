@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contacts — Contact List</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      padding-top: 5rem;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #222;
+      background: #000;
+      z-index: 50;
+    }
+
+    .nav-brand { font-weight: 800; font-size: 1rem; }
+    .nav-brand a { color: #fff; text-decoration: none; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-user { font-size: 0.85rem; color: #666; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1.1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+
+    .btn:hover { opacity: 0.8; }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-outline { background: transparent; border: 1px solid #fff; color: #fff; }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+    }
+
+    .page-header h1 { font-size: 1.75rem; font-weight: 800; }
+
+    .search {
+      width: 100%;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 0.6rem;
+      color: #fff;
+      font-size: 0.95rem;
+      padding: 0.65rem 1rem;
+      outline: none;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.15s;
+    }
+
+    .search:focus { border-color: #fff; }
+
+    .contact-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .contact-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 0.75rem;
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      transition: border-color 0.15s;
+    }
+
+    .contact-card:hover { border-color: #444; }
+
+    .contact-info { flex: 1; min-width: 0; }
+
+    .contact-name {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .contact-email { font-size: 0.85rem; color: #666; }
+    .contact-desc { font-size: 0.82rem; color: #555; margin-top: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .contact-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #222;
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: #555;
+    }
+
+    .empty p { margin-top: 0.5rem; font-size: 0.9rem; }
+
+    .loading { text-align: center; padding: 4rem; color: #555; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><a href="index.html">Contact List</a></div>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-user"></span>
+    <a href="login.html" class="btn btn-outline" id="nav-login-btn">Login</a>
+    <button class="btn btn-primary" id="nav-logout-btn" style="display:none" onclick="handleLogout()">Logout</button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Contacts</h1>
+    <button class="btn btn-primary" onclick="window.location.href='index.html'">&#43; Add Contact</button>
+  </div>
+
+  <input class="search" type="text" placeholder="Search by name, surname or email…" oninput="filterContacts(this.value)" />
+
+  <div id="contacts-container" class="loading">Loading…</div>
+</main>
+
+<script>
+  let _sb = null;
+  function getClient() {
+    if (!_sb) _sb = window.supabase.createClient(
+      'https://nklekakddfviwjhuqggi.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbGVrYWtkZGZ2aXdqaHVxZ2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDU3OTEsImV4cCI6MjA5MjI4MTc5MX0.nbokOmpsGP2j9O5-7wI7lNRbtHqxB9Xmnis_e3nllIY'
+    );
+    return _sb;
+  }
+
+  let allContacts = [];
+
+  async function initNav() {
+    const { data: { session } } = await getClient().auth.getSession();
+    if (session?.user) {
+      document.getElementById('nav-user').textContent = session.user.email;
+      document.getElementById('nav-login-btn').style.display = 'none';
+      document.getElementById('nav-logout-btn').style.display = 'inline-flex';
+    }
+  }
+
+  async function handleLogout() {
+    await getClient().auth.signOut();
+    window.location.reload();
+  }
+
+  function renderContacts(list) {
+    const container = document.getElementById('contacts-container');
+    if (list.length === 0) {
+      container.innerHTML = '<div class="empty"><div style="font-size:2rem">👤</div><p>No contacts found.</p></div>';
+      return;
+    }
+    container.className = 'contact-list';
+    container.innerHTML = list.map(c => {
+      const initials = (c.name[0] + c.surname[0]).toUpperCase();
+      return `
+        <div class="contact-card">
+          <div class="contact-avatar">${initials}</div>
+          <div class="contact-info">
+            <div class="contact-name">${escape(c.name)} ${escape(c.surname)}</div>
+            ${c.email ? `<div class="contact-email">${escape(c.email)}</div>` : ''}
+            ${c.description ? `<div class="contact-desc">${escape(c.description)}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function escape(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function filterContacts(query) {
+    const q = query.toLowerCase();
+    const filtered = allContacts.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.surname.toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q)
+    );
+    renderContacts(filtered);
+  }
+
+  async function loadContacts() {
+    const { data, error } = await getClient().from('contacts').select('*').order('created_at', { ascending: false });
+    const container = document.getElementById('contacts-container');
+    if (error) {
+      container.className = '';
+      container.innerHTML = `<div class="empty"><p style="color:#f87171">${error.message}</p></div>`;
+      return;
+    }
+    allContacts = data || [];
+    renderContacts(allContacts);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initNav();
+    loadContacts();
+  });
+</script>
+
+</body>
+</html>
